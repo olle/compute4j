@@ -10,6 +10,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Exchange;
 import org.springframework.amqp.core.ExchangeBuilder;
+import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
@@ -37,9 +38,6 @@ public class Compute4j {
     public static void main(String[] args) throws Exception {
 
         new SpringApplicationBuilder(Compute4j.class).web(WebApplicationType.NONE).run(args);
-
-        // TODO: Remove when listeners are active...
-        // Thread.currentThread().join();
     }
 }
 
@@ -96,10 +94,7 @@ class RabbitMqConfig implements Loggable {
     @Bean
     Binding createCompute4jBinding() {
 
-        return log_created(BindingBuilder.bind(createCompute4jQueue())
-                .to(createCompute4jExchange())
-                .with("")
-                .noargs());
+        return log_created(BindingBuilder.bind(createCompute4jQueue()).to((FanoutExchange) createCompute4jExchange()));
     }
 
 
