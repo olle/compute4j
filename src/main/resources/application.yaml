@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: compute4j
+  rabbitmq:
+    ## Better defaults for RabbitMQ docker/default
+    username: guest
+    password: guest
