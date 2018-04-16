@@ -1,5 +1,6 @@
 package compute4j.app.amqp;
 
+import compute4j.app.event.PerformComputeEvent;
 import compute4j.app.event.RegisterComputeEvent;
 import compute4j.app.event.UnknownMessageEvent;
 
@@ -104,6 +105,10 @@ class RabbitMqConfig implements Loggable {
         switch (message.getMessageProperties().getReceivedRoutingKey()) {
             case "register":
                 publisher.publishEvent(RegisterComputeEvent.valueOf(message));
+                break;
+
+            case "compute":
+                publisher.publishEvent(PerformComputeEvent.valueOf(message));
                 break;
 
             default:
