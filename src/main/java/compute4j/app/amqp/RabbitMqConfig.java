@@ -1,4 +1,7 @@
-package compute4j;
+package compute4j.app.amqp;
+
+import compute4j.app.event.RegisterComputeEvent;
+import compute4j.app.event.UnknownMessageEvent;
 
 import compute4j.logging.Loggable;
 
@@ -17,10 +20,7 @@ import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,20 +32,18 @@ import java.net.UnknownHostException;
 import java.util.Locale;
 
 
-@SpringBootApplication
-public class Compute4j {
-
-    public static void main(String[] args) throws Exception {
-
-        new SpringApplicationBuilder(Compute4j.class).web(WebApplicationType.NONE).run(args);
-    }
-}
-
 @EnableRabbit
 @Configuration
 class RabbitMqConfig implements Loggable {
 
     private static final String COMPUTE4J = "compute4j";
+
+    private final ApplicationEventPublisher publisher;
+
+    public RabbitMqConfig(ApplicationEventPublisher publisher) {
+
+        this.publisher = publisher;
+    }
 
     @Bean
     Exchange createCompute4jExchange() {
@@ -102,5 +100,15 @@ class RabbitMqConfig implements Loggable {
     public void subscribe(Message message) {
 
         logger().info("||--> Received {}", message);
+
+        switch (message.getMessageProperties().getReceivedRoutingKey()) {
+            case "register":
+                publisher.publishEvent(RegisterComputeEvent.valueOf(message));
+                break;
+
+            default:
+                publisher.publishEvent(UnknownMessageEvent.valueOf(message));
+                break;
+        }
     }
 }
